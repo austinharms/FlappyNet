@@ -136,11 +136,19 @@ private:
 		_layerCount = layerCount + 1;
 		_nodeCount = _inputCount + _outputCount + (_layerSize * layerCount);
 		_inputNodes = new Node[_nodeCount];
-		assert(_inputNodes != nullptr);
+		if (_inputNodes == nullptr) {
+			std::cout << "Failed to allocate " << (_nodeCount * sizeof(Node)) << "bytes of memory, exiting" << std::endl;
+			exit(-1);
+		}
+
 		_nodes = _inputNodes + _inputCount;
 		_outputNodes = _nodes + (_layerSize * layerCount);
 		_layers = (Layer*)malloc(_layerCount * sizeof(Layer));
-		assert(_layers != nullptr);
+		if (_layers == nullptr) {
+			std::cout << "Failed to allocate " << (_layerCount * sizeof(Layer)) << "bytes of memory, exiting" << std::endl;
+			exit(-1);
+		}
+
 		new(_layers) Layer(_inputNodes, _inputCount, _nodes, _layerSize);
 		for (uint32_t i = 1; i < _layerCount - 1; ++i)
 			new(_layers + i) Layer(_nodes + ((i - 1) * _layerSize), _layerSize, _nodes + (i * _layerSize), _layerSize);

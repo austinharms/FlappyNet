@@ -40,7 +40,7 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 	{
 		Net* defaultNet;
 		if (savePath == nullptr) {
-			defaultNet = new Net(7, 1, 7, 15);
+			defaultNet = new Net(7, 1, 7, 10);
 		}
 		else {
 			std::ifstream netFile(savePath, std::ios::binary);
@@ -306,7 +306,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Flappy Net");
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
-	trainAIPlayers(window, 3000);
-	//runAIPlayer(window, "best.net");
+	//trainAIPlayers(window, 3000);
+	runAIPlayer(window, "best.net");
 	return 0;
 }
