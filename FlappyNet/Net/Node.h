@@ -3,6 +3,6 @@
 struct Node
 {
 public:
-	float Threshold;
-	float Sum;
+	float Threshold = 1;
+	float Sum = 0;
 };

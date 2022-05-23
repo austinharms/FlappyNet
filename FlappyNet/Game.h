@@ -2,64 +2,85 @@
 #include <SFML/Graphics.hpp>
 #include "Pipe.h"
 #include <stdint.h>
-#include "Player.h"
+#include "Collider.h"
 
 class Game
 {
 public:
-	const float START_SPEED = 1;
-	const float ACCELERATION = 0.001f;
+	const float START_SPEED = 150;
+	const float ACCELERATION = 0.25f;
 	const float PIPE_DISTANCE = 300;
 	static const uint8_t PIPE_COUNT = 5;
 	Game() {
 		_running = false;
-		Reset();
+		reset();
 	}
 
-	void Start() {
+	void start() {
 		_running = true;
 	}
 
-	void Reset() {
+	void reset() {
 		_speed = START_SPEED;
 		for (uint8_t i = 0; i < PIPE_COUNT; ++i) {
-			_pipes[i].SetPosition(750 + (PIPE_DISTANCE * i), rand()%400 + 100);
+			//_pipes[i].setPosition(200 + (PIPE_DISTANCE * (i + 1)), rand() % 400 + 100);
+			_pipes[i].setPosition(200 + (PIPE_DISTANCE * (i + 1)), rand() % 200 + 200);
 		}
+
+		_pipes[0].setPosition(200 + PIPE_DISTANCE, 350);
+		_nextPipe = _pipes;
 	}
 
-	void Stop() {
+	void stop() {
 		_running = false;
 	}
 
-	void Update(sf::RenderWindow& window, float dt) {
+	void update(float dt) {
 		if (!_running) return;
 		_speed += ACCELERATION * dt;
 		for (uint8_t i = 0; i < PIPE_COUNT; ++i) {
-			_pipes[i].Move(_speed * dt);
-			if (_pipes[i].GetPos() <= 0) {
-				_pipes[i].SetPosition(PIPE_COUNT * PIPE_DISTANCE, rand() % 400 + 100);
+			_pipes[i].move(_speed * dt);
+			if (_pipes[i].getPos() < 200 + PIPE_DISTANCE - Pipe::PIPE_WIDTH && _pipes[i].getPos() + Pipe::PIPE_WIDTH > 200)
+				_nextPipe = _pipes + i;
+
+			if (_pipes[i].getPos() <= 0) {
+				_pipes[i].setPosition(PIPE_COUNT * PIPE_DISTANCE, rand() % 200 + 200);
+				//_pipes[i].setPosition(PIPE_COUNT * PIPE_DISTANCE, 350);
 			}
-
-			_pipes[i].Update(window, dt);
 		}
 	}
 
-	bool CheckHit(Player& player) {
+	void draw(sf::RenderWindow& window) {
 		for (uint8_t i = 0; i < PIPE_COUNT; ++i) {
-			if (CheckOverlap(player.GetPos(), sf::Vector2f(player.PLAYER_SIZE, player.PLAYER_SIZE), _pipes[i].GetTopPos(), sf::Vector2f(_pipes[i].PIPE_WIDTH, _pipes[i].PIPE_HEIGHT))) return true;
-			if (CheckOverlap(player.GetPos(), sf::Vector2f(player.PLAYER_SIZE, player.PLAYER_SIZE), _pipes[i].GetBottomPos(), sf::Vector2f(_pipes[i].PIPE_WIDTH, _pipes[i].PIPE_HEIGHT))) return true;
+			if (_nextPipe == _pipes + i) {
+				_pipes[i].setColor(sf::Color(0, 0, 255));
+			}
+			else {
+				_pipes[i].setColor(sf::Color(255, 255, 255));
+			}
+			_pipes[i].draw(window);
 		}
-
-		return false;
 	}
 
-	bool CheckOverlap(sf::Vector2f pos1, sf::Vector2f size1, sf::Vector2f pos2, sf::Vector2f size2)
-	{
+	bool checkHitPipe(const Collider& c) const {
+		return checkOverlap(c.getPosition(), c.getSize(), _nextPipe->getTopPos(), sf::Vector2f(_nextPipe->PIPE_WIDTH, _nextPipe->PIPE_HEIGHT)) || checkOverlap(c.getPosition(), c.getSize(), _nextPipe->getBottomPos(), sf::Vector2f(_nextPipe->PIPE_WIDTH, _nextPipe->PIPE_HEIGHT));
+	}
+
+	bool checkOverlap(const sf::Vector2f pos1, const sf::Vector2f size1, const sf::Vector2f pos2, const sf::Vector2f size2) const {
 		return (pos1.x < pos2.x + size2.x && pos1.x + size1.x > pos2.x && pos1.y < pos2.y + size2.y && pos1.y + size1.y > pos2.y);
+	}
+
+	Pipe* getNextPipe() const {
+		return _nextPipe;
+	}
+
+	float getSpeed() const {
+		return _speed/START_SPEED;
 	}
 
 private:
 	Pipe _pipes[PIPE_COUNT];
+	Pipe* _nextPipe;
 	bool _running;
 	float _speed = START_SPEED;
 };
