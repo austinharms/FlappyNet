@@ -32,9 +32,6 @@
     <ClInclude Include="Net\Net.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Net\Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Net\Connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
