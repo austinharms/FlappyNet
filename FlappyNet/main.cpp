@@ -12,7 +12,7 @@
 #include "ctpl_stl.h"
 
 const float FIXED_STEP = 0.01f;
-const float AI_FIXED_STEP = 0.05f;
+const float AI_FIXED_STEP = 0.1f;
 
 void updateAIPlayer(int threadId, NetPlayer* player, float timeStep) {
 	player->calculate(timeStep);
@@ -306,7 +306,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Flappy Net");
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
-	//trainAIPlayers(window, 3000);
-	runAIPlayer(window, "last.net");
+	trainAIPlayers(window, 2000, "last.net");
+	//runAIPlayer(window, "last.net");
 	return 0;
 }

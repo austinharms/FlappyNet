@@ -22,9 +22,7 @@ public:
 			exit(-1);
 		}
 
-		for (uint32_t i = 0; i < _inputCount; ++i)
-			_inputThresholds[i] = 1;
-
+		resetInputThresholds();
 		resetConnectionWeights();
 	}
 
@@ -80,6 +78,11 @@ private:
 	void resetConnectionWeights() {
 		for (uint32_t i = 0; i < _connectionCount; ++i)
 			_connectionWeights[i] = 1;
+	}
+
+	void resetInputThresholds() {
+		for (uint32_t i = 0; i < _inputCount; ++i)
+			_inputThresholds[i] = 1;
 	}
 
 	float* _inputs;
