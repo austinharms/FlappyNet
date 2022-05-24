@@ -3,41 +3,47 @@
 #include <malloc.h>
 #include <random>
 #include <casetup.h>
-#include "Node.h"
 //#include "Connection.h"
 
 class Layer
 {
 public:
-	Layer(Node* input, uint32_t inputCount, Node* output, uint32_t outputCount) {
-		_inputs = input;
-		_outputs = output;
+	Layer(float* inputs, uint32_t inputCount, float* outputs, uint32_t outputCount) {
+		_inputs = inputs;
+		_outputs = outputs;
 		_inputCount = inputCount;
 		_outputCount = outputCount;
 		_connectionCount = _inputCount * _outputCount;
-		_connectionWeights = (float*)malloc(_connectionCount * sizeof(float));
-		assert(_connectionWeights != nullptr);
+
+		_inputThresholds = (float*)malloc((_connectionCount + _inputCount) * sizeof(float));
+		_connectionWeights = _inputThresholds + _outputCount;
+		if (_inputThresholds == nullptr) {
+			std::cout << "Failed to allocate " << ((_connectionCount + _outputCount) * sizeof(float)) << "bytes of memory, exiting" << std::endl;
+			exit(-1);
+		}
+
+		for (uint32_t i = 0; i < _inputCount; ++i)
+			_inputThresholds[i] = 1;
+
 		resetConnectionWeights();
 	}
 
 	~Layer() {
-		//free(_connections);
-		free(_connectionWeights);
+		free(_inputThresholds);
 	}
 
 	// Calculate the output node values
 	void compute(bool useInputThreshold = true) {
-		clearOutputNodes();
 		for (uint32_t i = 0; i < _inputCount; ++i) {
 			uint32_t index = i * _outputCount;
 			for (uint32_t o = 0; o < _outputCount; ++o) {
 				if (useInputThreshold) {
-					if (_inputs[i].Sum >= _inputs[i].Threshold)
-						_outputs[o].Sum += _connectionWeights[index + o];
+					if (_inputs[i] >= _inputThresholds[i])
+						_outputs[o] += _connectionWeights[index + o];
 				}
 				else
 				{
-					_outputs[o].Sum += _inputs[i].Sum * _connectionWeights[index + o];
+					_outputs[o] += _inputs[i] * _connectionWeights[index + o];
 				}
 			}
 		}
@@ -46,25 +52,17 @@ public:
 	// Randomises Output Node Weights and Internal Connections
 	void randomise(uint32_t nodeCount = 2, uint32_t connectionCount = 5) {
 		for (uint32_t i = 0; i < nodeCount; ++i)
-			_outputs[(uint32_t)(getRandValue01() * (_outputCount - 1))].Threshold += getRandValue();
+			_inputThresholds[(uint32_t)(getRandValue01() * (_inputCount - 1))] += getRandValue();
 		for (uint32_t i = 0; i < connectionCount; ++i)
 			_connectionWeights[(uint32_t)(getRandValue01() * (_connectionCount - 1))] += getRandValue();
 	}
 
-	float* getConnectionWeights() const {
-		return _connectionWeights;
-	}
-
-	uint32_t getConnectionCount() const {
-		return _connectionCount;
-	}
-
-	void saveLayer(uint8_t* buffer) {
-		memcpy(buffer, _connectionWeights, getSize());
+	uint8_t* getBytes() const {
+		return (uint8_t*)_inputThresholds;
 	}
 
 	uint64_t getSize() const {
-		return _connectionCount * sizeof(float);
+		return (_connectionCount + _outputCount) * sizeof(float);
 	}
 
 private:
@@ -78,22 +76,17 @@ private:
 		return ((float)rand() / RAND_MAX) * 1;
 	}
 
-	// Set the Sum of all output nodes to 0
-	void clearOutputNodes() {
-		for (uint32_t i = 0; i < _outputCount; ++i)
-			_outputs[i].Sum = 0;
-	}
-
 	// Set all ConnectionWeights to 1
 	void resetConnectionWeights() {
 		for (uint32_t i = 0; i < _connectionCount; ++i)
 			_connectionWeights[i] = 1;
 	}
 
-	Node* _inputs;
-	Node* _outputs;
+	float* _inputs;
+	float* _outputs;
 	//Connection* _connections;
 	float* _connectionWeights;
+	float* _inputThresholds;
 	uint32_t _connectionCount;
 	uint32_t _inputCount;
 	uint32_t _outputCount;

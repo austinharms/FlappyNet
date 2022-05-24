@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <malloc.h>
 #include <cassert>
-#include "Node.h"
 #include "Layer.h"
 #include <random>
 
@@ -15,10 +14,8 @@ public:
 
 	Net(const Net& other) {
 		init(other._inputCount, other._outputCount, other._layerSize, other._layerCount - 1);
-		for (uint64_t i = 0; i < _nodeCount; ++i)
-			_inputNodes[i].Threshold = other._inputNodes[i].Threshold;
 		for (uint32_t i = 0; i < _layerCount; ++i)
-			memcpy(_layers[i].getConnectionWeights(), other._layers[i].getConnectionWeights(), _layers[i].getConnectionCount() * sizeof(float));
+			memcpy(_layers[i].getBytes(), other._layers[i].getBytes(), _layers[i].getSize());
 	}
 
 	Net(const uint8_t* bytes) {
@@ -41,12 +38,9 @@ public:
 		offset += sizeof(layerCount);
 		
 		init(inputCount, outputCount, layerSize, layerCount - 1);
-		memcpy(_nodes, bytes + offset, sizeof(Node) * _nodeCount);
-		offset += sizeof(Node) * _nodeCount;
-
 		for (uint32_t i = 0; i < _layerCount; ++i) {
-			memcpy(_layers[i].getConnectionWeights(), bytes + offset, _layers[i].getConnectionCount() * sizeof(float));
-			offset += _layers[i].getConnectionCount() * sizeof(float);
+			memcpy(_layers[i].getBytes(), bytes + offset, _layers[i].getSize());
+			offset += _layers[i].getSize();
 		}
 		
 		assert(offset == getSize());
@@ -56,10 +50,12 @@ public:
 		for (uint32_t i = 0; i < _layerCount; ++i)
 			_layers[i].~Layer();
 		free(_layers);
-		delete[] _inputNodes;
+		free(_inputValues);
 	}
 
 	void compute() {
+		// Clear Old Outputs, NOT Inputs
+		memset(_values, 0, (_valueCount - _inputCount) * sizeof(float));
 		for (uint32_t i = 0; i < _layerCount; ++i)
 			_layers[i].compute(i != 0);
 	}
@@ -71,33 +67,22 @@ public:
 
 	void setInput(uint32_t inputIndex, float value) {
 		assert(inputIndex < _inputCount);
-		_inputNodes[inputIndex].Sum = value;
+		_inputValues[inputIndex] = value;
 	}
 
 	float getOutput(uint32_t outputIndex) {
 		assert(outputIndex < _outputCount);
-		return _outputNodes[outputIndex].Sum / _outputNodes[outputIndex].Threshold;
-	}
-
-	float getNodeSum(uint32_t nodeIndex) const {
-		assert(nodeIndex < _nodeCount);
-		return _inputNodes[nodeIndex].Sum;
-	}
-
-	float getNodeThreshold(uint32_t nodeIndex) const {
-		assert(nodeIndex < _nodeCount);
-		return _inputNodes[nodeIndex].Threshold;
+		return _outputValues[outputIndex];
 	}
 
 	uint32_t getNodeCount() const {
-		return _nodeCount;
+		return _valueCount;
 	}
 
 	Net& operator=(const Net&) = delete;
 
 	uint64_t getSize() const {
-		uint64_t size = _nodeCount * sizeof(Node);
-		size += sizeof(_inputCount) + sizeof(_outputCount) + sizeof(_layerSize) + sizeof(_layerCount);
+		uint64_t size = sizeof(_inputCount) + sizeof(_outputCount) + sizeof(_layerSize) + sizeof(_layerCount);
 		for (uint32_t i = 0; i < _layerCount; ++i)
 			size += _layers[i].getSize();
 
@@ -116,11 +101,8 @@ public:
 		memcpy(bytes + offset, &_layerCount, sizeof(_layerCount));
 		offset += sizeof(_layerCount);
 
-		memcpy(bytes + offset, _nodes, sizeof(Node) * _nodeCount);
-		offset += sizeof(Node) * _nodeCount;
-
 		for (uint32_t i = 0; i < _layerCount; ++i) {
-			_layers[i].saveLayer(bytes + offset);
+			memcpy(bytes + offset, _layers[i].getBytes(), _layers[i].getSize());
 			offset += _layers[i].getSize();
 		}
 
@@ -134,33 +116,35 @@ private:
 		_outputCount = outputCount;
 		_layerSize = layerSize;
 		_layerCount = layerCount + 1;
-		_nodeCount = _inputCount + _outputCount + (_layerSize * layerCount);
-		_inputNodes = new Node[_nodeCount];
-		if (_inputNodes == nullptr) {
-			std::cout << "Failed to allocate " << (_nodeCount * sizeof(Node)) << "bytes of memory, exiting" << std::endl;
+		_valueCount = _inputCount + _outputCount + (_layerSize * layerCount);
+		_inputValues = (float*)malloc(_valueCount * sizeof(float));
+
+		if (_inputValues == nullptr) {
+			std::cout << "Failed to allocate " << (_valueCount * sizeof(float)) << "bytes of memory, exiting" << std::endl;
 			exit(-1);
 		}
 
-		_nodes = _inputNodes + _inputCount;
-		_outputNodes = _nodes + (_layerSize * layerCount);
+		_values = _inputValues + _inputCount;
+		_outputValues = _values + (_layerSize * layerCount);
+
 		_layers = (Layer*)malloc(_layerCount * sizeof(Layer));
 		if (_layers == nullptr) {
 			std::cout << "Failed to allocate " << (_layerCount * sizeof(Layer)) << "bytes of memory, exiting" << std::endl;
 			exit(-1);
 		}
 
-		new(_layers) Layer(_inputNodes, _inputCount, _nodes, _layerSize);
+		new(_layers) Layer(_inputValues, _inputCount, _values, _layerSize);
 		for (uint32_t i = 1; i < _layerCount - 1; ++i)
-			new(_layers + i) Layer(_nodes + ((i - 1) * _layerSize), _layerSize, _nodes + (i * _layerSize), _layerSize);
+			new(_layers + i) Layer(_values + ((i - 1) * _layerSize), _layerSize, _values + (i * _layerSize), _layerSize);
 
-		new(_layers + _layerCount - 1) Layer(_nodes + (_layerSize - 1) * _layerSize, _layerSize, _outputNodes, _outputCount);
+		new(_layers + _layerCount - 1) Layer(_values + (_layerSize - 1) * _layerSize, _layerSize, _outputValues, _outputCount);
 	}
 
-	Node* _nodes;
-	Node* _inputNodes;
-	Node* _outputNodes;
+	float* _values;
+	float* _inputValues;
+	float* _outputValues;
 	Layer* _layers;
-	uint64_t _nodeCount;
+	uint64_t _valueCount;
 	uint32_t _inputCount;
 	uint32_t _outputCount;
 	uint32_t _layerCount;

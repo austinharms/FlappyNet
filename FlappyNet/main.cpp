@@ -307,6 +307,6 @@ int main()
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
 	//trainAIPlayers(window, 3000);
-	runAIPlayer(window, "best.net");
+	runAIPlayer(window, "last.net");
 	return 0;
 }
