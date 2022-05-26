@@ -45,6 +45,14 @@ public:
 				}
 			}
 		}
+
+		//for (uint32_t o = 0; o < _outputCount; ++o) {
+		//	for (uint32_t i = 0; i < _inputCount; ++i) {
+		//		_outputs[o] += _inputs[i] * _connectionWeights[i * _outputCount + o];
+		//	}
+
+		//	_outputs[o] = _outputs[o] >= 
+		//}
 	}
 	
 	// Randomises Output Node Weights and Internal Connections

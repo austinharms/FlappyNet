@@ -238,6 +238,9 @@ void runAIPlayer(sf::RenderWindow& window, const char* savePath) {
 			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
+			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+				netPlayer->jump();
+			}
 		}
 	}
 
@@ -306,7 +309,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Flappy Net");
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
-	trainAIPlayers(window, 2000, "last.net");
+	trainAIPlayers(window, 3000, "last.net");
 	//runAIPlayer(window, "last.net");
 	return 0;
 }

@@ -8,7 +8,7 @@ class Game
 {
 public:
 	const float START_SPEED = 150;
-	const float ACCELERATION = 0.25f;
+	const float ACCELERATION = 3;
 	const float PIPE_DISTANCE = 300;
 	static const uint8_t PIPE_COUNT = 5;
 	Game() {

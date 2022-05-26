@@ -52,6 +52,10 @@ public:
 		}
 	}
 
+	void jump() {
+		_acceleration = PLAYER_JUMP_STRENGTH;
+	}
+
 	void update(float dt) {
 		if (_live) {
 			_lifetime += dt;
