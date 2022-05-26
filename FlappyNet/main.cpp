@@ -309,7 +309,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Flappy Net");
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
-	trainAIPlayers(window, 3000, "last.net");
+	trainAIPlayers(window, 2000);
 	//runAIPlayer(window, "last.net");
 	return 0;
 }

@@ -57,7 +57,7 @@ public:
 		// Clear Old Outputs, NOT Inputs
 		memset(_values, 0, (_valueCount - _inputCount) * sizeof(float));
 		for (uint32_t i = 0; i < _layerCount; ++i)
-			_layers[i].compute(i != 0);
+			_layers[i].compute();
 	}
 
 	void randomise() {
