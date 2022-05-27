@@ -32,9 +32,6 @@
     <ClInclude Include="Net\Net.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Net\Connection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Net\Layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -812,5 +809,8 @@
     <Library Include="SFML-2.5.1\lib\vorbis.lib" />
     <Library Include="SFML-2.5.1\lib\vorbisenc.lib" />
     <Library Include="SFML-2.5.1\lib\vorbisfile.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="font.TTF" />
   </ItemGroup>
 </Project>

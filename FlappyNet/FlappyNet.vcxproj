@@ -157,7 +157,6 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="ctpl_stl.h" />
     <ClInclude Include="NetPlayer.h" />
-    <ClInclude Include="Net\Connection.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Net\Layer.h" />
     <ClInclude Include="Net\Net.h" />
@@ -714,6 +713,9 @@
     <Library Include="SFML-2.5.1\lib\vorbis.lib" />
     <Library Include="SFML-2.5.1\lib\vorbisenc.lib" />
     <Library Include="SFML-2.5.1\lib\vorbisfile.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="font.TTF" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -19,4 +19,36 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CL\cl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_d3d9_ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_d3d10.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_d3d10_ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_d3d11_ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_gl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_gl_ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\cl_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CL\opencl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

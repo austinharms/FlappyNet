@@ -13,6 +13,7 @@
 
 const float FIXED_STEP = 0.01f;
 const float AI_FIXED_STEP = 0.1f;
+sf::Font* font = nullptr;
 
 void updateAIPlayer(int threadId, NetPlayer* player, float timeStep) {
 	player->calculate(timeStep);
@@ -23,6 +24,7 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 	float bestTime = 0;
 	uint8_t* bestNet = nullptr;
 	uint64_t bestNetSize = 0;
+	float lastTime = 0;
 	uint8_t* lastNet = nullptr;
 	uint64_t lastNetSize = 0;
 	uint64_t generationCount = 0;
@@ -61,6 +63,9 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 		delete defaultNet;
 	}
 
+	sf::Text text;
+	text.setFont(*font);
+	text.setFillColor(sf::Color::White);
 	game.start();
 	// Create Game Loop
 	while (window.isOpen())
@@ -94,9 +99,10 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 						bestPlayer = netPlayers[i];
 				}
 
-				std::cout << "Best: " << bestPlayer->getLifetime() << std::endl;
+				//std::cout << "Best: " << bestPlayer->getLifetime() << std::endl;
 				free(lastNet);
 				lastNet = bestPlayer->getNet()->getBytes();
+				lastTime = bestPlayer->getLifetime();
 				lastNetSize = bestPlayer->getNet()->getSize();
 				if (bestPlayer->getLifetime() > bestTime) {
 					bestTime = bestPlayer->getLifetime();
@@ -118,6 +124,8 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 
 				delete bestPlayer;
 				game.reset();
+
+				text.setString("Gen: " + std::to_string(generationCount) + " Best: " + std::to_string(bestTime) + " Last: " + std::to_string(lastTime));
 				++generationCount;
 			}
 		}
@@ -132,6 +140,7 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 		// Draw Game/Pipes
 		game.draw(window);
 
+		window.draw(text);
 		// Show the frame
 		window.display();
 
@@ -157,14 +166,26 @@ void trainAIPlayers(sf::RenderWindow& window, uint32_t playerCount, const char* 
 			}
 			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S) {
 				lastSavedGeneration = generationCount;
-				std::ofstream best("best.net");
+				std::ofstream best("best.net", std::ios::binary);
 				best.write((const char*)bestNet, bestNetSize);
 				best.close();
 
-				std::ofstream last("last.net");
+				std::ofstream last("last.net", std::ios::binary);
 				last.write((const char*)lastNet, lastNetSize);
 				last.close();
 				std::cout << "Saved" << std::endl;
+			}
+			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+				lastSavedGeneration = generationCount;
+				std::ofstream best("best.net", std::ios::binary);
+				best.write((const char*)bestNet, bestNetSize);
+				best.close();
+
+				std::ofstream last("last.net", std::ios::binary);
+				last.write((const char*)lastNet, lastNetSize);
+				last.close();
+				std::cout << "Saved" << std::endl;
+				return;
 			}
 		}
 	}
@@ -306,10 +327,14 @@ void playPlayer(sf::RenderWindow& window) {
 
 int main()
 {
+	font = new sf::Font();
+	if (!font->loadFromFile("font.TTF"))
+		std::cout << "Failed to Load Font" << std::endl;
+
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Flappy Net");
 	window.setKeyRepeatEnabled(false);
 	//playPlayer(window);
 	trainAIPlayers(window, 2000);
-	//runAIPlayer(window, "last.net");
+	runAIPlayer(window, "last.net");
 	return 0;
 }

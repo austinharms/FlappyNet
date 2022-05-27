@@ -3,72 +3,12 @@
 #ifdef __APPLE__
 #include <OpenCL/cl.hpp>
 #else
-#include <CL/cl.hpp>
+#include <CL/cl.h>
 #endif
 
 #define NUM_GLOBAL_WITEMS 1024
 
 //https://github.com/stroucki/OpenCL-examples/blob/master/example01/main.cpp
-
-void compareResults(double CPUtime, double GPUtime, int trial) {
-    double time_ratio = (CPUtime / GPUtime);
-    std::cout << "VERSION " << trial << " -----------" << std::endl;
-    std::cout << "CPU time: " << CPUtime << std::endl;
-    std::cout << "GPU time: " << GPUtime << std::endl;
-    std::cout << "GPU is ";
-    if (time_ratio > 1)
-        std::cout << time_ratio << " times faster!" << std::endl;
-    else
-        std::cout << (1 / time_ratio) << " times slower :(" << std::endl;
-}
-
-
-double timeAddVectorsCPU(int n, int k) {
-    // adds two vectors of size n, k times, returns total duration
-    std::clock_t start;
-    double duration;
-
-    int A[n], B[n], C[n];
-    for (int i = 0; i < n; i++) {
-        A[i] = i;
-        B[i] = n - i;
-        C[i] = 0;
-    }
-
-    start = std::clock();
-    for (int i = 0; i < k; i++) {
-        for (int j = 0; j < n; j++)
-            C[j] = A[j] + B[j];
-    }
-
-    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-    return duration;
-}
-
-
-void warmup(cl::Context& context, cl::CommandQueue& queue,
-    cl::Kernel& add, int A[], int B[], int n) {
-    int C[n];
-    // allocate space
-    cl::Buffer buffer_A(context, CL_MEM_READ_WRITE, sizeof(int) * n);
-    cl::Buffer buffer_B(context, CL_MEM_READ_WRITE, sizeof(int) * n);
-    cl::Buffer buffer_C(context, CL_MEM_READ_WRITE, sizeof(int) * n);
-
-    // push write commands to queue
-    queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(int) * n, A);
-    queue.enqueueWriteBuffer(buffer_B, CL_TRUE, 0, sizeof(int) * n, B);
-
-    // RUN ZE KERNEL
-    add.setArg(1, buffer_B);
-    add.setArg(0, buffer_A);
-    add.setArg(2, buffer_C);
-    for (int i = 0; i < 5; i++)
-        queue.enqueueNDRangeKernel(add, cl::NullRange, cl::NDRange(NUM_GLOBAL_WITEMS), cl::NDRange(32));
-
-    queue.enqueueReadBuffer(buffer_C, CL_TRUE, 0, sizeof(int) * n, C);
-    queue.finish();
-}
-
 
 int main(int argc, char* argv[]) {
 
